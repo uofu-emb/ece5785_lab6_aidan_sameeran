@@ -2,17 +2,22 @@
 #include "task.h"
 #include "semphr.h"
 #include "pico/cyw43_arch.h"
+#include <stdio.h>
+#include "pico/stdlib.h"
 
 TaskHandle_t low_priority;
 TaskHandle_t high_priority;
 
 SemaphoreHandle_t semaphore;
 
+bool stay_off = 0;
+
 void higher_priority(void *param)
 {
     while (1)
     {
         printf("We are in the higher priority task\n");
+        cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0);
 
         xSemaphoreTake(semaphore, portMAX_DELAY); // Blocks until semaphore can be taken
 
@@ -29,6 +34,8 @@ void lower_priority(void *param)
 
     while (1)
     {
+        vTaskDelay(500);
+
         cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 1);
 
         xSemaphoreTake(semaphore, portMAX_DELAY); // Blocks until semaphore can be taken
@@ -39,20 +46,23 @@ void lower_priority(void *param)
             count = 1;
         }
 
-        while (1)
+        while (!stay_off)
         {
+            printf("We are in the lower priority task\n");
             cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, led_state);
             led_state = !led_state;
-            vTaskDelay(100);
+            vTaskDelay(500);
         }
     }
 }
 
 void main()
 {
+    stdio_init_all();
     hard_assert(cyw43_arch_init() == PICO_OK);     // Initializes the on-board LED
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0); // Start the on-board LED as off
-    semaphore = xSemaphoreCreateBinary();
+    sleep_ms(2000);
+    semaphore = xSemaphoreCreateMutex();
     xTaskCreate(lower_priority, "LowerPriorityTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &low_priority);
     vTaskStartScheduler();
 }
