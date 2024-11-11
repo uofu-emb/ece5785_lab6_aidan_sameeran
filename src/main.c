@@ -5,6 +5,9 @@
 #include <stdio.h>
 #include "pico/stdlib.h"
 
+#define ACTIVITY 0
+#define PART 1
+
 TaskHandle_t low_priority;
 TaskHandle_t high_priority;
 
@@ -62,7 +65,19 @@ void main()
     hard_assert(cyw43_arch_init() == PICO_OK);     // Initializes the on-board LED
     cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, 0); // Start the on-board LED as off
     sleep_ms(2000);
+    #if ACTIVITY == 0
+    semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(semaphore);
+    #elif ACTIVITY == 1
     semaphore = xSemaphoreCreateMutex();
+    #else
+    // Activity 2
+    #if PART == 1
+    
+    #else
+    #endif
+
+    #endif
     xTaskCreate(lower_priority, "LowerPriorityTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &low_priority);
     vTaskStartScheduler();
 }
