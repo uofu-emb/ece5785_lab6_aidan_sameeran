@@ -6,7 +6,6 @@
 #include "pico/stdlib.h"
 
 #define ACTIVITY 0
-#define PART 1
 
 TaskHandle_t low_priority;
 TaskHandle_t high_priority;
@@ -68,15 +67,8 @@ void main()
     #if ACTIVITY == 0
     semaphore = xSemaphoreCreateBinary();
     xSemaphoreGive(semaphore);
-    #elif ACTIVITY == 1
+    #else ACTIVITY == 1
     semaphore = xSemaphoreCreateMutex();
-    #else
-    // Activity 2
-    #if PART == 1
-    
-    #else
-    #endif
-
     #endif
     xTaskCreate(lower_priority, "LowerPriorityTask", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, &low_priority);
     vTaskStartScheduler();
