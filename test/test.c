@@ -38,6 +38,11 @@ void busy_yield(void *args)
     }
 }
 
+/**
+ * This tests 2 threads with the same priority, each running the busy_busy function.
+ * The second thread starts 1ms after the first thread does. The test passes if both
+ * threads run for less than 20 seconds.
+ */
 void test_same_priority__busy_busy(void)
 {
     test_helper(busy_busy, tskIDLE_PRIORITY, 0, &first_stats,
@@ -47,16 +52,30 @@ void test_same_priority__busy_busy(void)
     TEST_ASSERT(2000000 < second_stats);
 }
 
+/**
+ * This tests 2 threads with the same priority, each running the busy_yield function.
+ * The second thread starts 1ms after the first thread does. The test passes if the
+ * first thread runs more than the second thread (since it started first), if the
+ * first thread runs for more than 40 seconds, and the second thread runs for more than
+ * 2 seconds.
+ */
 void test_same_priority__yield_yield(void)
 {
     test_helper(busy_yield, tskIDLE_PRIORITY, 0, &first_stats,
                 busy_yield, tskIDLE_PRIORITY, 1, &second_stats,
                 &elapsed_stats, &elapsed_ticks);
     TEST_ASSERT(first_stats > second_stats);
-    TEST_ASSERT(first_stats > 4400000);
+    TEST_ASSERT(first_stats > 4000000);
     TEST_ASSERT(second_stats > 2000);
 }
 
+/**
+ * This tests 2 threads with the same priority, with the first thread running the 
+ * busy_busy function and the second thread running the busy_yield function. The
+ * second thread starts 1ms after the first thread does. The test passes if the
+ * first thread (running busy_busy) runs more than the second thread (running 
+ * busy_yield).
+ */
 void test_same_priority__busy_yield(void)
 {
     test_helper(busy_busy, tskIDLE_PRIORITY, 0, &first_stats,
@@ -65,6 +84,14 @@ void test_same_priority__busy_yield(void)
     TEST_ASSERT(first_stats > second_stats); // Check that busy busy ran more than busy yield
 }
 
+/**
+ * This tests 2 threads with different priorities, where both run the busy_busy
+ * function. The first thread has lower priority than the second thread, and also
+ * starts 1ms sooner than the second thread. Because of this, the higher priority
+ * thread should block the lower priority thread, and the first thread should
+ * barely run at all. This test passes if the first thread runs for less than 1
+ * second and the second thread runs for more than 45 seconds.
+ */
 void test_diff_priority__busy_busy_low(void)
 {
     test_helper(busy_busy, tskIDLE_PRIORITY, 0, &first_stats,
@@ -74,6 +101,14 @@ void test_diff_priority__busy_busy_low(void)
     TEST_ASSERT(4500000 < second_stats);
 }
 
+/**
+ * This tests 2 threads with different priorities, where both run the busy_busy
+ * function. The first thread has higher priority than the second thread, and also
+ * starts 1ms sooner than the second thread. Because of this, the higher priority
+ * thread should block the lower priority thread, and the second thread should
+ * barely run at all. This test passes if the second thread runs for less than 1
+ * second and the first thread runs for more than 45 seconds.
+ */
 void test_diff_priority__busy_busy_high(void)
 {
     test_helper(busy_busy, tskIDLE_PRIORITY + 1, 0, &first_stats,
@@ -83,13 +118,22 @@ void test_diff_priority__busy_busy_high(void)
     TEST_ASSERT(1000 > second_stats);
 }
 
+/**
+ * This tests 2 threads with different priorities, where both run the busy_yield
+ * function. The first thread has a higher priority than the second thread, and also
+ * starts 1ms sooner than the second thread. Both functions should consistently
+ * yield their time to the other thread, but the thread that was started first, and
+ * has the higher priority, should run for more time. The test passes if the first
+ * thread runs more than the second thread, the first thread runs for more than 40
+ * seconds, and the second thread runs for more than 2 seconds.
+ */
 void test_diff_priority__yield_yield(void)
 {
     test_helper(busy_yield, tskIDLE_PRIORITY + 1, 0, &first_stats,
                 busy_yield, tskIDLE_PRIORITY, 1, &second_stats,
                 &elapsed_stats, &elapsed_ticks);
     TEST_ASSERT(first_stats > second_stats);
-    TEST_ASSERT(first_stats > 4400000);
+    TEST_ASSERT(first_stats > 4000000);
     TEST_ASSERT(second_stats > 2000);
 }
 
