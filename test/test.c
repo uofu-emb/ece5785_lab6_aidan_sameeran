@@ -69,6 +69,8 @@ void test_diff_priority__busy_busy_low(void)
     test_helper(busy_busy, tskIDLE_PRIORITY, 0, &first_stats,
                 busy_busy, tskIDLE_PRIORITY + 1, 1, &second_stats,
                 &elapsed_stats, &elapsed_ticks);
+    TEST_ASSERT(1000 > first_stats);
+    TEST_ASSERT(4500000 < second_stats);
 }
 
 void test_diff_priority__busy_busy_high(void)
@@ -76,6 +78,8 @@ void test_diff_priority__busy_busy_high(void)
     test_helper(busy_busy, tskIDLE_PRIORITY + 1, 0, &first_stats,
                 busy_busy, tskIDLE_PRIORITY, 1, &second_stats,
                 &elapsed_stats, &elapsed_ticks);
+    TEST_ASSERT(4500000 < first_stats);
+    TEST_ASSERT(1000 > second_stats);
 }
 
 void test_diff_priority__yield_yield(void)
