@@ -62,6 +62,7 @@ void test_same_priority__busy_yield(void)
     test_helper(busy_busy, tskIDLE_PRIORITY, 0, &first_stats,
                 busy_yield, tskIDLE_PRIORITY, 1, &second_stats,
                 &elapsed_stats, &elapsed_ticks);
+    TEST_ASSERT(first_stats > second_stats); // Check that busy busy ran more than busy yield
 }
 
 void test_diff_priority__busy_busy_low(void)
@@ -87,6 +88,9 @@ void test_diff_priority__yield_yield(void)
     test_helper(busy_yield, tskIDLE_PRIORITY + 1, 0, &first_stats,
                 busy_yield, tskIDLE_PRIORITY, 1, &second_stats,
                 &elapsed_stats, &elapsed_ticks);
+    TEST_ASSERT(first_stats > second_stats);
+    TEST_ASSERT(first_stats > 4400000);
+    TEST_ASSERT(second_stats > 2000);
 }
 
 void main_thread()
