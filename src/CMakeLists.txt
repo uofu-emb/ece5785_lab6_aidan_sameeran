@@ -1,7 +1,8 @@
 # This is the main binary. List your C files here.
 add_executable(scheduling
     main.c
-    )
+    lab6.c
+)
 
 pico_set_program_name(scheduling "test")
 pico_set_program_version(scheduling "0.1")
